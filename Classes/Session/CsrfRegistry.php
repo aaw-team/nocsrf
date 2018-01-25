@@ -179,7 +179,7 @@ final class CsrfRegistry
     /**
      * @return array
      */
-    public function getSessionData(): array
+    private function getSessionData(): array
     {
         $sessionData = null;
         $sessionDataString = $this->userAuthentication->getSessionData(self::SESSION_IDENTIFIER);
