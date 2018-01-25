@@ -1,0 +1,22 @@
+{
+    "name": "aaw-team/nocsrf",
+    "type": "typo3-cms-extension",
+    "description": "Library for simple and secure CSRF protection in TYPO3 extensions",
+    "homepage": "",
+    "license": "GPL-2.0-or-later",
+    "version": "0.1.0-dev",
+    "require": {
+        "php": "^7.0 || ^7.1",
+        "typo3/cms-core": "^8.7",
+        "paragonie/constant_time_encoding": "^1|^2"
+    },
+    "replace": {
+        "nocsrf": "self.version",
+        "typo3-ter/nocsrf": "self.version"
+    },
+    "autoload": {
+        "psr-4": {
+            "AawTeam\\Nocsrf\\": "Classes/"
+        }
+    }
+}
