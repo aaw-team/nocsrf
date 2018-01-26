@@ -11,7 +11,7 @@
  ***************************************************************/
 
 $EM_CONF[$_EXTKEY] = array(
-    'title' => 'No-CSRF',
+    'title' => 'NoCSRF',
     'description' => 'Library for simple and secure CSRF protection in TYPO3 extensions',
     'category' => 'misc',
     'author' => 'Agentur am Wasser | Maeder & Partner AG',
