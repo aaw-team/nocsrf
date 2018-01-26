@@ -6,10 +6,21 @@
 Developers Manual
 =================
 
+.. _section-dev-general:
+
+General
+-------
+
+If you don't know about Cross-site request forgery (CSRF), please read
+this first:
+
+* `Cross-site request forgery (Wikipedia) <https://en.wikipedia.org/wiki/Cross-site_request_forgery>`_
+* `Cross-site request forgery (OWASP) <https://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)>`_
+
 .. _section-dev-include:
 
-Include in your project
------------------------
+Include NoCSRF in your project
+------------------------------
 
 To use NoCSRF in your project, add it to the dependency constraints in
 your `ext_emconf.php` to make sure it is available:
@@ -28,77 +39,49 @@ your `ext_emconf.php` to make sure it is available:
 If your project uses composer, add `typo3-ter/nocsrf` as required
 package.
 
-.. _section-dev-general:
-
-General
--------
-
-If you don't know about Cross-site request forgery (CSRF), please read
-this first:
-
-* `Cross-site request forgery (Wikipedia) <https://en.wikipedia.org/wiki/Cross-site_request_forgery>`_
-* `Cross-site request forgery (OWASP) <https://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)>`_
-
 .. _section-dev-usage:
 
 Usage
 -----
 
-Include in a fluid form
-^^^^^^^^^^^^^^^^^^^^^^^
+NoCSRF is generally designed to work within every TYPO3 extension. While
+nowadays lots of extensions use extbase/fluid, NoCSRF provides some handy
+integrations for those.
 
-.. code-block:: html
-    
-    <html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
-          xmlns:nocsrf="http://typo3.org/ns/AawTeam/Nocsrf/ViewHelpers">
-        <f:form method="post">
-            <nocsrf:form.csrftoken />
-            <!-- The other form-stuff goes here -->
-        </f:form>
-    </html>
+Please refer to the documentation of your own flavour of TYPO3 extension
+or the API documentation.
 
-Validate a request (extbase)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. toctree::
+    :maxdepth: 3
+    :titlesonly:
 
-.. code-block:: php
+    Extbase/Index
+    Other/Index
+    API/Index
 
-    use AawTeam\Nocsrf\Utility\NocsrfUtility;
 
-    class MyController extends ActionController
-    {
-        public function createAction(MyModel $model)
-        {
-            if (NocsrfUtility::validateExtbaseMvcRequest($this->request) !== true) {
-                $this->response->setContent('Security alert: CSRF token validation failed');
-                throw new \TYPO3\CMS\Extbase\Mvc\Exception\StopActionException();
-            }
-            // At this point you can be sure the request is legitimate
-        }
-    }
+.. _section-dev-whynott3formprotection:
 
-Validate a request (without extbase)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Why not use the TYPO3 FormProtection?
+-------------------------------------
 
-.. code-block:: php
+As you might know, TYPO3 ships with it's own
+:ref:`FormProtection Tool <t3coreapi:csrf>` since TYPO3 4.5 and it is
+widely used throughout the core.
 
-    use AawTeam\Nocsrf\Session\CsrfRegistry;
-    use AawTeam\Nocsrf\ViewHelpers\Form\CsrfTokenViewHelper;
-    use TYPO3\CMS\Core\Utility\GeneralUtility;
+There are two major drawbacks is in our opinion:
 
-    class MyController
-    {
-        public function createAction()
-        {
-            $postdata = GeneralUtility::_POST('tx_myext');
-            if (is_array($postdata) && !empty($postdata)) {
-                $csrfRegistry = GeneralUtility::makeInstance(CsrfRegistry::class);
-                $identifier = $postdata[CsrfTokenViewHelper::TOKEN_ID_IDENTIFIER] ?? '';
-                $token = $postdata[CsrfTokenViewHelper::TOKEN_VALUE_IDENTIFIER] ?? '';
-                if($csrfRegistry->verifyToken($identifier, $token) !== true) {
-                    throw new \Exception('Security alert: CSRF token validation failed');
-                }
-                // At this point you can be sure the request is legitimate
-            }
-        }
-    }
+1. Tokens are not necessarily unique. Because a token is generated with
+   a HMAC, that is mixed with a secret (which is persisted in the
+   user session). With this approach the uniqueness of any generated
+   token relies on the uniqueness of the arguments passed to the
+   generator method. Therefore, the token will always be the same (for
+   the same generator arguments), as long as the session lives and the
+   secret in the session does not change (which could be triggered by an
+   extra API call).
 
+2. Tokens do not have a limited lifetime. The secret in the session does
+   not either.
+
+In our opinion, the TYPO3 FormProtection Tool is too simple and does not
+meet the properties of a modern CSRF prevention.
