@@ -22,6 +22,7 @@ use ParagonIE\ConstantTime\Base64UrlSafe;
 use ParagonIE\ConstantTime\Binary;
 use TYPO3\CMS\Core\Authentication\AbstractUserAuthentication;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
+use TYPO3\CMS\Core\Utility\MathUtility;
 use TYPO3\CMS\Frontend\Authentication\FrontendUserAuthentication;
 use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 
@@ -31,7 +32,7 @@ use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 final class CsrfRegistry
 {
     const SESSION_IDENTIFIER = 'NOCSRF';
-    const MAX_TOKENS_IN_SESSION = 25;
+    const DEFAULT_MAX_TOKENS_IN_SESSION = 1000;
 
     const HMAC_ALGO = 'sha256';
     const HMAC_LENGTH = 64;
@@ -41,22 +42,44 @@ final class CsrfRegistry
     const TOKEN_LIFETIME = 1800;
 
     /**
+     * @var int
+     */
+    private $maxTokensInSession = self::DEFAULT_MAX_TOKENS_IN_SESSION;
+
+    /**
      * @var AbstractUserAuthentication
      */
     private $userAuthentication;
 
     /**
      * @throws \RuntimeException
+     * @throws \RangeException
      * @return void
      */
     public function __construct()
     {
+        // Set the AbstractUserAuthentication instance
         if ((TYPO3_REQUESTTYPE & TYPO3_REQUESTTYPE_FE) && ($GLOBALS['TSFE'] instanceof TypoScriptFrontendController) && ($GLOBALS['TSFE']->fe_user instanceof FrontendUserAuthentication) && $GLOBALS['TSFE']->fe_user->user['uid'] > 0) {
             $this->userAuthentication = $GLOBALS['TSFE']->fe_user;
         } elseif ((TYPO3_REQUESTTYPE & TYPO3_REQUESTTYPE_BE) && ($GLOBALS['BE_USER'] instanceof BackendUserAuthentication) && $GLOBALS['BE_USER']->user['uid'] > 0) {
             $this->userAuthentication = $GLOBALS['BE_USER'];
         } else {
             throw new \RuntimeException('Invalid environment');
+        }
+
+        // Set $maxTokensInSession
+        if (isset($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['nocsrf']['maxTokensInSession'])) {
+            $maxTokensInSession = $GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['nocsrf']['maxTokensInSession'];
+            if (!is_int($maxTokensInSession)) {
+                if (!MathUtility::canBeInterpretedAsInteger($maxTokensInSession)) {
+                    throw new \RuntimeException('$GLOBALS["TYPO3_CONF_VARS"]["EXTCONF"]["nocsrf"]["maxTokensInSession"] must be integer, got "' . gettype($maxTokensInSession) . '"');
+                }
+                $maxTokensInSession = (int)$maxTokensInSession;
+            }
+            if ($maxTokensInSession < 1) {
+                throw new \RangeException('$GLOBALS["TYPO3_CONF_VARS"]["EXTCONF"]["nocsrf"]["maxTokensInSession"] must be integer greater than zero');
+            }
+            $this->maxTokensInSession = $maxTokensInSession;
         }
     }
 
@@ -150,13 +173,13 @@ final class CsrfRegistry
         $sessionData[$identifier] = $token;
 
         // Remove exceeding tokens from session
-        if (count($sessionData) > self::MAX_TOKENS_IN_SESSION) {
+        if (count($sessionData) > $this->maxTokensInSession) {
             // Sort oldest to newst
             uasort($sessionData, function($a, $b) {
                 return ($a['crdate'] <=> $b['crdate']);
             });
             // Remove superfluous tokens from beginning of the array
-            $sessionData = array_slice($sessionData, count($sessionData) - self::MAX_TOKENS_IN_SESSION);
+            $sessionData = array_slice($sessionData, count($sessionData) - $this->maxTokensInSession);
         }
         $this->storeSessionData($sessionData);
     }

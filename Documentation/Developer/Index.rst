@@ -55,6 +55,7 @@ or the API documentation.
     :maxdepth: 3
     :titlesonly:
 
+    Configuration/Index
     Extbase/Index
     Other/Index
     API/Index
