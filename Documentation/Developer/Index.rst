@@ -6,6 +6,9 @@
 Developers Manual
 =================
 
+.. contents:: Table of Contents
+    :local:
+
 .. _section-dev-general:
 
 General

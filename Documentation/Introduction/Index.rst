@@ -6,6 +6,8 @@
 Introduction
 ============
 
+.. contents:: Table of Contents
+    :local:
 
 .. _section-what-it-does:
 

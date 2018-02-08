@@ -6,6 +6,9 @@
 Configuration
 =============
 
+.. contents:: Table of Contents
+    :local:
+
 The behaviour of NoCSRF is configured in
 `$GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['nocsrf']`.
 

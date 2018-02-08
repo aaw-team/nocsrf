@@ -6,8 +6,12 @@
 Extbase-based extensions
 ========================
 
+.. contents:: Table of Contents
+    :local:
+
+
 As stated before, NoCSRF provides some handy tools for extbase-based
-extensions. They consist of a fluid ViewHelper and an extension of the
+extensions. They consist of fluid ViewHelpers and an extension of the
 default `ActionController` of extbase. The combination of the two leads
 to a very easy-to-use system that protects you from CSRF attacks, both
 in frontend and backend.

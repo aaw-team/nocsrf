@@ -6,6 +6,9 @@
 API documentation
 =================
 
+.. contents:: Table of Contents
+    :local:
+
 .. _section-developer-manual-api-annotation:
 
 @csrfvalidation annotation

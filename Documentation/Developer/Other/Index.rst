@@ -6,6 +6,9 @@
 Non-extbase extensions
 ======================
 
+.. contents:: Table of Contents
+    :local:
+
 While the usage of this extension is very simple for extbase/fluid-based
 extensions, others can use it anyway. The API is easy-to-use, let's take
 a look at it.
