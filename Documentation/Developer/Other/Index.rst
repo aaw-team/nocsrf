@@ -56,13 +56,15 @@ they are part of the API.
                 if($csrfRegistry->verifyToken($identifier, $token) !== true) {
                     throw new \Exception('Security alert: CSRF token validation failed');
                 }
+
                 // At this point you can be sure the request is legitimate
+
             } else {
                 list($identifier, $token) = $csrfRegistry->generateTokenAndIdentifier();
                 return '
                     <form action="" method="post">
-                        <input type="hidden" name="tx_myext[' . CsrfTokenViewHelper::TOKEN_ID_IDENTIFIER . ']" value="' . $identifier . '" />
-                        <input type="hidden" name="tx_myext[' . CsrfTokenViewHelper::TOKEN_VALUE_IDENTIFIER . ']" value="' . $token . '" />
+                        <input type="hidden" name="tx_myext[' . CsrfTokenViewHelper::TOKEN_ID_IDENTIFIER . ']" value="' . htmlentities($identifier, ENT_QUOTES, 'UTF-8') . '" />
+                        <input type="hidden" name="tx_myext[' . CsrfTokenViewHelper::TOKEN_VALUE_IDENTIFIER . ']" value="' . htmlentities($token, ENT_QUOTES, 'UTF-8') . '" />
                         <!-- The other form-stuff goes here -->
                     </form>
                 ';
