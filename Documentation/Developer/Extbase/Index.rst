@@ -31,6 +31,41 @@ Include CSRF token in a fluid form
         </f:form>
     </html>
 
+Include CSRF token in a link/uri
+--------------------------------
+
+Normally, CSRF tokens are included in forms, as described above. But if
+there is a special need to add the token to a link or an uri, the
+ViewHelpers `Link/ActionViewHelper` and `Uri/ActionViewHelper` can be
+used:
+
+.. code-block:: html
+
+    <html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
+          xmlns:nocsrf="http://typo3.org/ns/AawTeam/Nocsrf/ViewHelpers">
+
+        <!-- <nocsrf:link.action> example -->
+        <div class="confirmationDialog">
+            <p>Are you sure you want to do this?<p>
+            <nocsrf:link.action action="runsomething">YES</nocsrf:link.action>
+            <f:link.action action="overview">NO</f:link.action>
+        </div>
+
+        <!-- <nocsrf:uri.action> example -->
+        <div class="confirmationDialog">
+            <p>Are you sure you want to do this?<p>
+            <a href="{nocsrf:uri.action(action:'runsomething')}">YES</a>
+            <a href="javascript:history.back();">NO</a>
+        </div>
+
+    </html>
+
+The ViewHelpers `Link/ActionViewHelper` and `Uri/ActionViewHelper`
+extend their equivalents from fluid. All arguments supported by the
+fluid ViewHelpers are available too. To "equip" links/uris with the CSRF
+token, just change `<f:link.action ...>` to `<nocsrf:link.action ...>`
+(or `<f:uri.action ..>` to `<nocsrf:uri.action ..>`).
+
 The Controller-side
 -------------------
 
