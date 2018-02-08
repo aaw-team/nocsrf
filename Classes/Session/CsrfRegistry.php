@@ -37,7 +37,7 @@ final class CsrfRegistry
     const HMAC_ALGO = 'sha256';
     const HMAC_LENGTH = 64;
 
-    const TOKEN_BYTES = 32;
+    const TOKEN_BYTES = 33;
     const TOKEN_IDENTIFIER_BYTES = 18;
     const TOKEN_LIFETIME = 1800;
 
