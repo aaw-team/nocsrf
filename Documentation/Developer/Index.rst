@@ -66,26 +66,52 @@ or the API documentation.
 
 .. _section-dev-whynott3formprotection:
 
-Why not use the TYPO3 FormProtection?
--------------------------------------
+What about the TYPO3 FormProtection?
+------------------------------------
 
-As you might know, TYPO3 ships with it's own
-:ref:`FormProtection Tool <t3coreapi:csrf>` since TYPO3 4.5 and it is
-widely used throughout the core.
+TYPO3 ships with it's own :ref:`FormProtection Tool <t3coreapi:csrf>`
+since TYPO3 4.5, which is widely used throughout the core. There are two
+major drawbacks in our opinion:
 
-There are two major drawbacks is in our opinion:
+**1. Token reuse**
 
-1. Tokens are not necessarily unique. Because a token is generated with
-   a HMAC, that is mixed with a secret (which is persisted in the
-   user session). With this approach the uniqueness of any generated
-   token relies on the uniqueness of the arguments passed to the
-   generator method. Therefore, the token will always be the same (for
-   the same generator arguments), as long as the session lives and the
-   secret in the session does not change (which could be triggered by an
-   extra API call).
+   Within the FormProtection API, a token is not a random string, but a
+   basically a hash (hmac) including a (randomly generated) secret (which
+   is stored in the session):
 
-2. Tokens do not have a limited lifetime. The secret in the session does
-   not either.
+   .. code-block:: php
 
-In our opinion, the TYPO3 FormProtection Tool is too simple and does not
-meet the properties of a modern CSRF prevention.
+      $token = hash_hmac('sha1', $some . $userdefined . $strings . $secretFromSession, $GLOBALS['TYPO3_CONF_VARS']['SYS']['encryptionKey']);
+
+   Say: the FormProtection API is designed to be able to *reproduce
+   tokens, instead of comparing them to a random value* that is dropped
+   as soon as it gets used.
+
+   Like this it is not possible to invalidate one single token (after
+   use) without invalidating every other token as well.
+
+   Furthermore, the secret value in the session is not cleared
+   internally, that must be done separately (by the consuming code).
+   Which leads in fact to token reuse.
+
+**2. No token lifetime limit**
+
+   As described in the first point, tokens are reproducible and thus
+   don't exist somewhere as data. Like this it is not possible to
+   invalidate/expire a token after a defined time. Except for clearing
+   the session-based secret, which will in turn invalidate every other
+   token generated until this moment.
+
+   And the session-based secret does not have a lifetime limit either.
+   If it doesn't get cleared proactively, it lives as long as the
+   session is valid (which applies to every token as well).
+
+These issues are supposedly caused by the complex use cases of TYPO3 CMS,
+especially in backend.
+
+However, the design of the FormProtection API did not meet our
+requirements. That's why NoCSRF came to life: a modern, secure and yet
+easy to use CSRF protection for TYPO3 (extension-) developers.
+
+Please feel free to contact us if you have further questions or comments,
+we're happy to answer!
