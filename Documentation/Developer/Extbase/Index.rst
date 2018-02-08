@@ -113,10 +113,15 @@ advantage of the `@csrfvalidation` annotation in phpDoc.
          */
         public function deleteAction(Product $product, bool $confirmation = false)
         {
-            // At this point you can be sure the request is legitimate
+            if ($confirmation === true) {
+                // At this point you can be sure the request is legitimate
+            }
         }
     }
 
+For more information about `@csrfvalidation` annotation, see section
+:ref:`section-developer-manual-api-annotation` in the
+:ref:`section-developer-manual-api`.
 
 Way 2: Validate a request inside an action method
 -------------------------------------------------
