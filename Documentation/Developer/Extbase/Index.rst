@@ -123,9 +123,13 @@ advantage of the `@csrfvalidation` annotation in phpDoc.
         }
     }
 
-For more information about `@csrfvalidation` annotation, see section
-:ref:`section-developer-manual-api-annotation` in the
-:ref:`section-developer-manual-api`.
+.. note::
+
+    The CSRF validation takes place in the dispatch process just
+    **before** the (extbase-internal) argument mapping and validation.
+
+For more information about `@csrfvalidation` annotation, see
+:ref:`section-developer-manual-csrfvalidation`.
 
 Way 2: Validate a request inside an action method
 -------------------------------------------------

@@ -61,6 +61,7 @@ or the API documentation.
     Configuration/Index
     Extbase/Index
     Other/Index
+    Csrfvalidation/Index
     API/Index
 
 

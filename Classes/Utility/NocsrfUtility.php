@@ -68,21 +68,23 @@ final class NocsrfUtility
      *
      *      Validate every request to the annotated method.
      *
-     *   2. @csrfvalidation ifHasAnyArgument
+     *   2. @csrfvalidation ifHasAnyArgument([arg1, arg2 [, argN]])
      *
      *      Validate every request that contains at least one argument
-     *      which ist specified with @param.
+     *      which ist specified with @param. Optionally, the list to test
+     *      against can be specified (arg1, arg2 [, argN]). Note that the
+     *      list must contain either zero or more than one argument!
      *
      *   2. @csrfvalidation ifHasArguments(arg1 [, arg2 [, argN]])
      *
-     *      Validate every request that contains at least one argument
-     *      from the list (arg1 [, arg2 [, argN]]) which ist specified
-     *      with @param.
+     *      Validate every request that contains all of the arguments
+     *      (specified with @param) from the list
+     *      (arg1 [, arg2 [, argN]]).
      *
      * @param string $className
      * @param string $methodName
      * @param array $argumentNamesInRequest
-     * @throws \RuntimeException
+     * @throws \LogicException
      * @return bool
      * @api
      */
@@ -99,35 +101,60 @@ final class NocsrfUtility
                 foreach ($specifications as $specification) {
                     $matches = [];
                     if (stripos($specification, 'ifHasAnyArgument') === 0) {
-                        foreach (self::getExtbaseReflectionService()->getMethodParameters($className, $methodName) as $argumentName => $unused) {
+                        $argumentstoCheck = [];
+                        if ($specification !== 'ifHasAnyArgument' && preg_match('/^ifHasAnyArgument\\s*\\(\\s*([^\\)]+)\\s*\\)$/i', $specification, $matches)) {
+                            $argumentstoCheck = self::createArgumentNamesArrayFromString($matches[1], $className, $methodName);
+                            if (count($argumentstoCheck) == 1) {
+                                throw new \LogicException('Invalid @csrfvalidation annotation: ifHasAnyArgument() must have either zero or more than one arguments in ' . $className . '->' . $methodName . '(): "' . htmlspecialchars($specification) . '"', 1518174237);
+                            }
+                        }
+                        if (empty($argumentstoCheck)) {
+                            $argumentstoCheck = array_keys(self::getExtbaseReflectionService()->getMethodParameters($className, $methodName));
+                        }
+                        foreach ($argumentstoCheck as $argumentName) {
                             if (in_array($argumentName, $argumentNamesInRequest)) {
                                 $runValidation = true;
                                 break 2;
                             }
                         }
-                    } elseif (preg_match('/^ifHasArguments\\s*\\(\\s*([^\\)]+)\\s*\\)$/i', $specification, $matches)) {
-                        $argumentNames = GeneralUtility::trimExplode(',', $matches[1], true);
+                    } elseif (preg_match('/^ifHasArguments\\s*\\(([^\\)]*)\\s*\\)$/i', $specification, $matches)) {
+                        $argumentNames = self::createArgumentNamesArrayFromString($matches[1], $className, $methodName);
                         if (empty($argumentNames)) {
-                            throw new \RuntimeException('Invalid @csrfvalidation annotation in ' . $className . '->' . $methodName . '(): "' . $specification . '"', 1516906446);
+                            throw new \LogicException('Invalid @csrfvalidation annotation: ifHasArguments() expects at least one argument in ' . $className . '->' . $methodName . '(): "' . htmlspecialchars($specification) . '"', 1516906446);
                         }
-                        array_walk($argumentNames, function(&$value, $key) {
-                            if ($value[0] === '$') {
-                                $value = substr($value, 1);
-                            }
-                        });
                         foreach ($argumentNames as $argumentName) {
-                            if (in_array($argumentName, $argumentNamesInRequest)) {
-                                $runValidation = true;
+                            if (!in_array($argumentName, $argumentNamesInRequest)) {
                                 break 2;
                             }
                         }
+                        $runValidation = true;
                     } else {
-                        throw new \RuntimeException('Invalid @csrfvalidation annotation in ' . $className . '->' . $methodName . '(): "' . $specification . '"', 1516906498);
+                        throw new \LogicException('Invalid @csrfvalidation annotation in ' . $className . '->' . $methodName . '(): "' . htmlspecialchars($specification) . '"', 1516906498);
                     }
                 }
             }
         }
         return $runValidation;
+    }
+
+    /**
+     * @param string $input
+     * @param string $className
+     * @param string $methodName
+     * @throws \LogicException
+     * @return array
+     */
+    protected static function createArgumentNamesArrayFromString(string $input, string $className, string $methodName): array
+    {
+        $argumentNames = GeneralUtility::trimExplode(',', $input, true);
+        array_walk($argumentNames, function(&$value, $key) {
+            $value = ltrim($value, '$');
+        });
+        $methodParameterNames = array_keys(self::getExtbaseReflectionService()->getMethodParameters($className, $methodName));
+        if ($diff = array_diff($argumentNames, $methodParameterNames)) {
+            throw new \LogicException('Invalid @csrfvalidation annotation: you specified arguments ("' . implode('", "', array_map('htmlspecialchars', $diff)) . '") that are not declared with @param in ' . $className . '->' . $methodName . '()', 1518173081);
+        }
+        return $argumentNames;
     }
 
     /**
