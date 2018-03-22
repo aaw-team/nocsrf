@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace AawTeam\Nocsrf\Session;
+namespace AawTeam\Nocsrf\Exception;
 
 /*
  * Copyright 2018 Agentur am Wasser | Maeder & Partner AG
@@ -19,10 +19,9 @@ namespace AawTeam\Nocsrf\Session;
  */
 
 /**
- * InvalidHmacException gets thrown when a HMAC check did not succeed.
- *
- * When catching this exception, be sure to discard all the data with
- * the invalid HMAC!
+ * InvalidEnvironmentException gets thrown when CsrfRegistry starts up
+ * and no valid login session exists.
  */
-class InvalidHmacException extends \RuntimeException
-{}
+class InvalidEnvironmentException extends \RuntimeException
+{
+}

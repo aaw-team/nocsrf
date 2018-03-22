@@ -64,7 +64,7 @@ final class CsrfRegistry
         } elseif ((TYPO3_REQUESTTYPE & TYPO3_REQUESTTYPE_BE) && ($GLOBALS['BE_USER'] instanceof BackendUserAuthentication) && $GLOBALS['BE_USER']->user['uid'] > 0) {
             $this->userAuthentication = $GLOBALS['BE_USER'];
         } else {
-            throw new \RuntimeException('Invalid environment');
+            throw new \AawTeam\Nocsrf\Exception\InvalidEnvironmentException();
         }
 
         // Set $maxTokensInSession
@@ -210,7 +210,7 @@ final class CsrfRegistry
             try {
                 $sessionDataString = $this->verifyAndStripHMAC($sessionDataString);
                 $sessionData = \json_decode($sessionDataString, true);
-            } catch (InvalidHmacException $e) {
+            } catch (\AawTeam\Nocsrf\Exception\InvalidHmacException $e) {
                 $this->clearAll();
                 $sessionData = [];
             }
@@ -244,7 +244,7 @@ final class CsrfRegistry
 
     /**
      * @param string $string
-     * @throws InvalidHmacException
+     * @throws \AawTeam\Nocsrf\Exception\InvalidHmacException
      * @return string
      */
     private function verifyAndStripHMAC(string $string): string
@@ -256,7 +256,7 @@ final class CsrfRegistry
                 return $plainString;
             }
         }
-        throw new InvalidHmacException();
+        throw new \AawTeam\Nocsrf\Exception\InvalidHmacException();
     }
 
     /**
