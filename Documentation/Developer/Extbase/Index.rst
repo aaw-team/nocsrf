@@ -30,7 +30,7 @@ Include CSRF token in a fluid form
     <html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
           xmlns:nocsrf="http://typo3.org/ns/AawTeam/Nocsrf/ViewHelpers">
         <f:form method="post">
-            <nocsrf:form.csrftoken />
+            <nocsrf:form.csrfToken />
             <!-- The other form-stuff goes here -->
         </f:form>
     </html>
@@ -73,7 +73,7 @@ token, just change `<f:link.action ...>` to `<nocsrf:link.action ...>`
 The Controller-side
 -------------------
 
-When you have added the csrftoken ViewHelper to your form, nothing
+When you have added the csrfToken ViewHelper to your form, nothing
 happens with the generated data yet. It must be verified at some point
 of the controller-flow. There are two ways to achieve this.
 

@@ -38,7 +38,7 @@ class CsrfTokenViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\Form\AbstractForm
      *   <html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
      *         xmlns:nocsrf="http://typo3.org/ns/AawTeam/Nocsrf/ViewHelpers">
      *       <f:form>
-     *           <nocsrf:form.csrftoken />
+     *           <nocsrf:form.csrfToken />
      *       </f:form>
      *   </html>
      *
